@@ -1,3 +1,5 @@
+%global __os_install_post %{nil}
+%define __spec_install_post %{nil}
 %undefine _disable_source_fetch
 %define debug_package %{nil}
 Name:           osu
@@ -9,8 +11,10 @@ License:        MIT
 URL:            https://osu.ppy.sh/
 Source0:        https://github.com/ppy/osu/archive/refs/tags/%{version}.tar.gz
 Source1:        osu.desktop
-
+Source2:        sh.ppy.osu.appdata.xml
+Source3:        x-osu.xml
 BuildRequires:  dotnet-sdk-6.0
+BuildRequires:  libappstream-glib
 Requires:       dotnet
 
 %description
@@ -39,11 +43,22 @@ cp assets/lazer.png $RPM_BUILD_ROOT/%{_datadir}/icons/hicolor/1024x1024/apps/osu
 mkdir -p $RPM_BUILD_ROOT/%{_datadir}/applications
 cp %{SOURCE1} $RPM_BUILD_ROOT/%{_datadir}/applications/osu.desktop
 
+# AppStream metadata
+mkdir -p $RPM_BUILD_ROOT/usr/share/appdata
+cp -v %{SOURCE2} %{buildroot}/%{_datadir}/appdata/
+appstream-util validate-relax --nonet  %{buildroot}/%{_datadir}/appdata/*
+
+# desktop integration
+mkdir -p %{buildroot}%{_datadir}/mime/application/
+cp -v %{SOURCE3} %{buildroot}%{_datadir}/mime/application/
+
+
 %files
-%license LICENSE
 /opt/osu/*
 %{_datadir}/icons/hicolor/1024x1024/apps/osu.png
 %{_datadir}/applications/osu.desktop
+%{_datadir}/appdata/sh.ppy.osu.appdata.xml
+%{_datadir}/mime/application/x-osu.xml
 
 %changelog
 * Wed Jan 19 2022 Cappy Ishihara <cappy@cappuchino.xyz>
